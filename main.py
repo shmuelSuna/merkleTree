@@ -133,7 +133,7 @@ class MerkleTree:
 
         # hash the data of leaf
         hashed_leaf_value = h.hexdigest()
-        leaf_found =None
+        leaf_found = None
         #find the leaf
         for leaf in self.leafs:
             if leaf.hashed_value == hashed_leaf_value:
@@ -143,16 +143,28 @@ class MerkleTree:
         if leaf_found is None:
             return False
 
+        temp_node = leaf_found
         for i in range (0,list_len):
-            # concatenating hashes
+            parnet = temp_node.parent
+            if parnet.left == temp_node: #TODO check this equation
+                # concatenating hashes
+                concatenated_hashes_str = str(temp_node.hased_value) + str(list[i])
+            else :
+                # concatenating hashes
+                concatenated_hashes_str = str(list[i]) + str(temp_node.hased_value)
 
-            concatenated_hashes_str = str(leaf_found.hased_value) + str(list[i])
             h5 = hashlib.sha256(concatenated_hashes_str)
             concatenated_hashes = h5.hexdigest()
+            if concatenated_hashes != parnet.hashed_value:
+                return False
+            else:
+                temp_node = parnet
 
+        if temp_node.hased_value == roots_hash:
+            return True
+        else:
+            return False
 
-
-        #get node of opposite subtree of leaf node (from root)
 
 
 
