@@ -31,6 +31,8 @@ class MerkleTree:
         elif int(choice) == 3:
             k =[]
             #self.proof_of_inclusion(leaf_num)
+        elif int(choice) == 4:
+            self.check_proof_of_inclusion(list[1:])
 
 
     def add_leaf(self,list):
@@ -80,7 +82,10 @@ class MerkleTree:
             temps_parent = temp.parent
             #concatenating hashes
             concatenated_hashes_str = str(temp.hased_value) + str(hased_data)
-            concatenated_hashes = h.hexdigest(concatenated_hashes_str)
+            h4 = hashlib.sha256(concatenated_hashes_str.encode())
+            concatenated_hashes = h4.hexdigest()
+
+
             new_interior_node = MerkleTreeNode(-1,concatenated_hashes,None,left=temp,right=leaf,parent=temps_parent,is_leaf=False)
             #updates
             temps_parent.right = new_interior_node
@@ -96,7 +101,10 @@ class MerkleTree:
             temps_parent = temp.parent
             #concatenating hashes
             concatenated_hashes_str = str(temp.hased_value) + str(hased_data)
-            concatenated_hashes = h.hexdigest(concatenated_hashes_str)
+            h5 = hashlib.sha256(concatenated_hashes_str.encode())
+            concatenated_hashes = h5.hexdigest()
+
+
             new_interior_node = MerkleTreeNode(-1,concatenated_hashes,None,left=temp,right=leaf,parent=temps_parent,is_leaf=False)
             # updates
             temps_parent.right = new_interior_node
@@ -112,6 +120,35 @@ class MerkleTree:
         for leaf in self.leafs:
             if leaf.number_leaf == leaf_num:
                 pass
+
+
+    def check_proof_of_inclusion(self,list):
+        leaf_before_hash = list[0]
+        roots_hash = list[1]
+        list = list[2:]
+        list_len = len(list)
+
+        leaf_before_hash.encode('utf-8')
+        h = hashlib.sha256(leaf_before_hash)  # TODO: check if h needs to be same h during the whole program
+
+        # hash the data of leaf
+        hashed_leaf_value = h.hexdigest()
+        leaf_found =None
+        #find the leaf
+        for leaf in self.leafs:
+            if leaf.hashed_value == hashed_leaf_value:
+                leaf_found = leaf
+                break
+
+        if leaf_found is None:
+            return False
+
+        for i in range (0,list_len):
+            # concatenating hashes
+
+            concatenated_hashes_str = str(leaf_found.hased_value) + str(list[i])
+            h5 = hashlib.sha256(concatenated_hashes_str)
+            concatenated_hashes = h5.hexdigest()
 
 
 
@@ -135,10 +172,10 @@ def get_input_from_user():
     return input_list
 
 if __name__ == '__main__':
-    h = hashlib.sha256("b".encode())
-    print(h.hexdigest())
-    h2 = hashlib.sha256('c'.encode())
-    print(h2.hexdigest())
+    # h = hashlib.sha256("b".encode())
+    # print(h.hexdigest())
+    # h2 = hashlib.sha256('c'.encode())
+    # print(h2.hexdigest())
 
     tree = MerkleTree()
     list_from_info_input = get_input_from_user()
