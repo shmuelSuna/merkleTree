@@ -12,6 +12,16 @@ class MerkleTreeNode:
         self.right = right
         self.is_leaf = is_leaf
 
+    def get_sibling(self):
+        # if there is no sibling
+        if self.parent.left is None or self.parent.right is None:
+            return None
+
+        if self.parent.left.hased_value == self.hased_value:
+            return self.parent.right
+
+        return self.parent.left
+
 
 class MerkleTree:
     def __init__(self,root=None):
@@ -29,8 +39,8 @@ class MerkleTree:
         elif int(choice) == 2:
             print(self.root.hased_value) #TODO: check if hex is needed?
         elif int(choice) == 3:
-            k =[]
-            #self.proof_of_inclusion(leaf_num)
+            leaf_num = int(list[1])
+            self.proof_of_inclusion(leaf_num)
         elif int(choice) == 4:
             self.check_proof_of_inclusion(list[1:])
 
@@ -116,10 +126,24 @@ class MerkleTree:
 
 
     def proof_of_inclusion(self,leaf_num):
-        #get neighbour node of leaf num
-        for leaf in self.leafs:
-            if leaf.number_leaf == leaf_num:
+        # find the wanted leaf
+        leaf = None
+        for l in self.leafs:
+            if leaf_num == l.number_leaf:
+                leaf = l
+                break
+
+        proof = []
+        while leaf != self.root:
+            sibling = leaf.get_sibling()
+            if sibling is None:
+                # todo implement
                 pass
+            else:
+                proof.append(sibling)
+                leaf = leaf.parent
+
+        return proof
 
 
     def check_proof_of_inclusion(self,list):
