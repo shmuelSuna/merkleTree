@@ -152,39 +152,25 @@ class MerkleTree:
         list = list[2:]
         list_len = len(list)
 
-        leaf_before_hash.encode('utf-8')
-        h = hashlib.sha256(leaf_before_hash)  # TODO: check if h needs to be same h during the whole program
+        h = hashlib.sha256(str(leaf_before_hash).encode('utf-8'))  # TODO: check if h needs to be same h during the whole program
 
         # hash the data of leaf
         hashed_leaf_value = h.hexdigest()
-        leaf_found = None
-        #find the leaf
-        for leaf in self.leafs:
-            if leaf.hashed_value == hashed_leaf_value:
-                leaf_found = leaf
-                break
 
-        if leaf_found is None:
-            return False
-
-        temp_node = leaf_found
         for i in range (0,list_len):
-            parnet = temp_node.parent
-            if parnet.left == temp_node: #TODO check this equation
+
+            if list[i][0] == str(1):
                 # concatenating hashes
-                concatenated_hashes_str = str(temp_node.hased_value) + str(list[i])
+                concatenated_hashes_str = str(hashed_leaf_value) + str(list[i][1:])
             else :
                 # concatenating hashes
-                concatenated_hashes_str = str(list[i]) + str(temp_node.hased_value)
+                concatenated_hashes_str = str(list[i][1:]) + str(hashed_leaf_value)
 
-            h5 = hashlib.sha256(concatenated_hashes_str)
+            h5 = hashlib.sha256(concatenated_hashes_str.encode('utf-8'))
             concatenated_hashes = h5.hexdigest()
-            if concatenated_hashes != parnet.hashed_value:
-                return False
-            else:
-                temp_node = parnet
+            hashed_leaf_value = concatenated_hashes
 
-        if temp_node.hased_value == roots_hash:
+        if hashed_leaf_value == roots_hash:
             return True
         else:
             return False
@@ -204,7 +190,7 @@ def get_input_from_user():
     for i in range(1,n):
         s+=sys.argv[i]
     input_list = s.split(sep='\\n')
-    input_list.pop()
+    #input_list.pop()
     return input_list
 
 if __name__ == '__main__':
@@ -214,7 +200,11 @@ if __name__ == '__main__':
     # print(h2.hexdigest())
 
     tree = MerkleTree()
-    list_from_info_input = get_input_from_user()
-    list_len = len(list_from_info_input)
+    #list_from_info_input = get_input_from_user()
+    list_from_info_input = [4, 'a', 'd71dc32fa2cd95be60b32dbb3e63009fa8064407ee19f457c92a09a5ff841a8a', '13e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d', '12e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6']
+    list_from_info_input2 = [4, 'b', 'd71dc32fa2cd95be60b32dbb3e63009fa8064407ee19f457c92a09a5ff841a8a' ,'13e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d', '12e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6']
+
+
+    list_len = len(list_from_info_input2)
     for i in range(0,list_len):
-        tree.activate_correct_function(list_from_info_input[i])
+        tree.activate_correct_function(list_from_info_input2)
