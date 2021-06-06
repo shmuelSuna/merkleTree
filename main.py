@@ -1,6 +1,7 @@
 import sys, hashlib
-
-
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 
 
 class MerkleTreeNode:
@@ -193,6 +194,30 @@ def get_input_from_user():
     return input_list
 
 
+def generate_RSA_keys():
+    # Create private key
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
+    # Create public key
+    public_key = private_key.public_key()
+    # Convert private key to printing format
+    private_key_print = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode("utf-8")
+    # Convert public key to printing format
+    public_key_print = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    ).decode("utf-8")
+    print(private_key_print)
+    print(public_key_print)
+
+
 if __name__ == '__main__':
     tree = MerkleTree()
     while True:
@@ -207,7 +232,7 @@ if __name__ == '__main__':
         elif command[0] == '4':
             tree.check_proof_of_inclusion(command[1])
         elif command[0] == '5':
-            pass # todo implement
+            generate_RSA_keys()
         elif command[0] == '6':
             pass # todo implement
         elif command[0] == '7':
