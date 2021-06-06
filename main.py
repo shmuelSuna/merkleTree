@@ -178,21 +178,22 @@ class MerkleTree:
             return False
 
 
-def get_input_from_user():
-    print(sys.argv)
-    print(sys.argv[1])
-    # info_input = sys.argv[1].replace('\\n', '\n').split(sep='\n')
-    # print(info_input)
+class SparseMerkleTree():
+    def __init__(self):
+        self.listOfPredefinedHashes = self.create_list_of_predefined_hashes()
 
-    # choice = sys.argv[1]
-    n = len(sys.argv)
-    s = ""
-    for i in range(1, n):
-        s += sys.argv[i]
-    input_list = s.split(sep='\\n')
-    # input_list.pop()
-    return input_list
+    def create_list_of_predefined_hashes(self):
+        list_of_predefined_hashes = []
+        for i in range(0, 257):
+            if i == 0:
+                list_of_predefined_hashes.append("0")
+            else:
+                concatenated_hashes_str = str(list_of_predefined_hashes[i - 1]) + str(list_of_predefined_hashes[i - 1])
+                h = hashlib.sha256(concatenated_hashes_str.encode('utf-8'))
+                hashed_value = h.hexdigest()
+                list_of_predefined_hashes.append(hashed_value)
 
+        return list_of_predefined_hashes
 
 def generate_RSA_keys():
     # Create private key
@@ -220,6 +221,7 @@ def generate_RSA_keys():
 
 if __name__ == '__main__':
     tree = MerkleTree()
+    sparseTree = SparseMerkleTree()
     while True:
         user_input = input()
         command = user_input.split(" ", 1)
@@ -240,7 +242,7 @@ if __name__ == '__main__':
         elif command[0] == '8':
             pass # todo implement
         elif command[0] == '9':
-            pass # todo implement
+            print(sparseTree.listOfPredefinedHashes[-1])
         elif command[0] == '10':
             pass # todo implement
         elif command[0] == '11':
@@ -248,8 +250,4 @@ if __name__ == '__main__':
         else:
             print("\n")
 
-    # tree = MerkleTree()
-    # list_from_info_input = get_input_from_user()
-    # list_len = len(list_from_info_input)
-    # for i in range(0, list_len):
-    #     tree.activate_correct_function(list_from_info_input[i])
+
