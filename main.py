@@ -178,9 +178,23 @@ class MerkleTree:
             return False
 
 
-class SparseMerkleTree():
+class SparseMerkleTreeNode:
+    def __init__(self, right, left, father, hashed_data, level):
+        self.right = right
+        self.left = left
+        self.father = father
+        self.hashed_data = hashed_data
+        self.level = level
+
+
+class SparseMerkleTree:
     def __init__(self):
         self.listOfPredefinedHashes = self.create_list_of_predefined_hashes()
+        self.root = SparseMerkleTreeNode(None, None, None, self.listOfPredefinedHashes[-1],
+                                         len(self.listOfPredefinedHashes) - 1)
+
+    def print_root(self):
+        print(self.root.hashed_data)
 
     def create_list_of_predefined_hashes(self):
         list_of_predefined_hashes = []
@@ -194,6 +208,114 @@ class SparseMerkleTree():
                 list_of_predefined_hashes.append(hashed_value)
 
         return list_of_predefined_hashes
+
+    def add_leaf(self, digest):
+        scale = 16
+        num_of_bits = 256
+        bin_digest = bin(int(digest, scale))[2:].zfill(num_of_bits)
+        temp_node = self.root
+        for bit in bin_digest:
+            if bit == '0':
+                if temp_node.left is not None:
+                    temp_node = temp_node.left
+                    continue
+                else:
+                    new_node = SparseMerkleTreeNode(None, None, temp_node, None, temp_node.level - 1)
+                    temp_node.left = new_node
+                    temp_node = temp_node.left
+                    continue
+            else:
+                if temp_node.right is not None:
+                    temp_node = temp_node.right
+                    continue
+                else:
+                    new_node = SparseMerkleTreeNode(None, None, temp_node, None, temp_node.level - 1)
+                    temp_node.right = new_node
+                    temp_node = temp_node.right
+                    continue
+
+        temp_node.hashed_data = "1"
+
+        while temp_node.father is not None:
+            father = temp_node.father
+            # sibling_hash = ""
+            # concatenated_hashes_str = ""
+            if temp_node == father.left: # temp_node is left
+                if father.right is not None:
+                    sibling_hash = father.right.hashed_data
+                else:
+                    sibling_hash = self.listOfPredefinedHashes[temp_node.level]
+                concatenated_hashes_str = temp_node.hashed_data + sibling_hash
+            else:
+                if father.left is not None:
+                    sibling_hash = father.left.hashed_data
+                else:
+                    sibling_hash = self.listOfPredefinedHashes[temp_node.level]
+                concatenated_hashes_str = sibling_hash + temp_node.hashed_data
+            h = hashlib.sha256(concatenated_hashes_str.encode('utf-8'))
+            hashed_value = h.hexdigest()
+            father.hashed_data = hashed_value
+            temp_node = temp_node.father
+
+    def create_proof_of_inclusion(self, digest):
+        print(self.root.hashed_data, end=" ")
+
+        scale = 16
+        num_of_bits = 256
+        bin_digest = bin(int(digest, scale))[2:].zfill(num_of_bits)
+        temp_node = self.root
+
+        hashed_value = ""
+        for bit in bin_digest:
+            if bit == '0':
+                if temp_node.left is not None:
+                    temp_node = temp_node.left
+                else:
+                    hashed_value = self.listOfPredefinedHashes[temp_node.level]
+                    break
+            else:
+                if temp_node.right is not None:
+                    temp_node = temp_node.right
+                else:
+                    hashed_value = self.listOfPredefinedHashes[temp_node.level]
+                    break
+
+        # if self.listOfPredefinedHashes[-1] != self.root.hashed_data:
+        #     print()
+
+        print(hashed_value, end=" ")  # todo check if there is something to print
+
+        if temp_node.level != 0:
+            if temp_node.right is not None:
+                print(temp_node.right.hashed_data, end=" ")
+            elif temp_node.left is not None:
+                print(temp_node.left.hashed_data, end=" ")
+
+
+        # if temp_node.level == 1:
+        #     if bin_digest[-1] == '1':
+        #         hashed_value = temp_node.left.hashed_data
+        #     else:
+        #         hashed_value = temp_node.right.hashed_data
+
+
+
+        while temp_node.father is not None:
+            father = temp_node.father
+            if temp_node == father.left:
+                if father.right is not None:
+                    print(father.right.hashed_data, end=" ")
+                else:
+                    print(self.listOfPredefinedHashes[temp_node.level], end=" ")
+            else:
+                if father.left is not None:
+                    print(father.left.hashed_data, end=" ")
+                else:
+                    print(self.listOfPredefinedHashes[temp_node.level], end=" ")
+            temp_node = temp_node.father
+
+        print("")
+
 
 def generate_RSA_keys():
     # Create private key
@@ -240,11 +362,11 @@ if __name__ == '__main__':
         elif command[0] == '7':
             pass # todo implement
         elif command[0] == '8':
-            pass # todo implement
+            sparseTree.add_leaf(command[1])
         elif command[0] == '9':
-            print(sparseTree.listOfPredefinedHashes[-1])
+            sparseTree.print_root()
         elif command[0] == '10':
-            pass # todo implement
+            sparseTree.create_proof_of_inclusion(command[1])
         elif command[0] == '11':
             pass # todo implement
         else:
